@@ -1,13 +1,7 @@
 # 427H1p0T66
 427H1p0T66
 
-asdfas
+Keep the repo clean.
 
-Sup guys
-Alex
-
-
-=======
-sup guys
-yoooooooooooooo
+Quantathon in 5 days!
 
