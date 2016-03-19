@@ -118,7 +118,80 @@ def rvp(day, stock_num, parsed_data):
     ln_sl = log(parsed_data[day]['stocks'][stock_num]['sl'])
     return init_val * ((ln_sh - ln_sl) ** 2)
 
+def a1(day, stock_num, a1_const, rcc_matrix):
+    rcc_t_minu1_j = rcc_matrix[day - 1][stock_num]
+    avg_rcc = rcc_matrix[day - 1][NUM_STOCKS]
+    return a1_const * ((rcc_t_minu1_j - avg_rcc)/NUM_STOCKS)
 
+def a2(day, stock_num, a2_const, roo_matrix):
+    roo_tj = roo_matrix[day][stock_num]
+    avg_roo = roo_matrix[day][NUM_STOCKS]
+    return a2_const * ((roo_tj - avg_roo)/NUM_STOCKS)
+
+def a3(day, stock_num, a3_const, roc_matrix):
+    roc_t_minu1_j = rcc_matrix[day - 1][stock_num]
+    avg_roc = roc_matrix[day - 1][NUM_STOCKS]
+    return a3_const * ((roc_t_minu1_j - avg_roc)/NUM_STOCKS)
+
+def a4(day, stock_num, a4_const, rco_matrix):
+    rco_tj = roo_matrix[day][stock_num]
+    avg_rco = rco_matrix[day][NUM_STOCKS]
+    return a4_const * ((rco_tj - avg_rco)/NUM_STOCKS)
+
+def a5(day, stock_num, a5_const, rcc_matrix, parsed_data):
+    tvl_t_minus1_j = parsed_data[day - 1]['stocks'][stock_num]['tvl']
+    avg_tvl_val = avg_tvl(day - 1, stock_num, parsed_data)
+    rcc_t_minus1_j = rcc_matrix[day - 1][stock_num]
+    avg_rcc = rcc_matrix[day - 1][NUM_STOCKS]
+    return (a5_const * (tvl_t_minus1_j / avg_tvl_val) *
+            ((rcc_t_minus1_j - avg_rcc)/NUM_STOCKS))
+
+def a6(day, stock_num, a6_const, roo_matrix, parsed_data):
+    tvl_t_minus1_j = parsed_data[day - 1]['stocks'][stock_num]['tvl']
+    avg_tvl_val = avg_tvl(day - 1, stock_num, parsed_data)
+    roo_tj = roo_matrix[day][stock_num]
+    avg_roo = roo_matrix[day][NUM_STOCKS]
+    return (a6_const * (tvl_t_minus1_j / avg_tvl_val) *
+            ((roo_tj - avg_roo)/NUM_STOCKS))
+
+def a7(day, stock_num, a7_const, roc_matrix, parsed_data):
+    tvl_t_minus1_j = parsed_data[day - 1]['stocks'][stock_num]['tvl']
+    avg_tvl_val = avg_tvl(day - 1, stock_num, parsed_data)
+    roc_t_minus1_j = roc_matrix[day - 1][stock_num]
+    avg_roc = roc_matrix[day - 1][NUM_STOCKS]
+    return (a7_const * (tvl_t_minus1_j / avg_tvl_val) *
+            ((roc_t_minus1_j - avg_roc)/NUM_STOCKS))
+
+def a8(day, stock_num, a8_const, rco_matrix, parsed_data):
+    tvl_t_minus1_j = parsed_data[day - 1]['stocks'][stock_num]['tvl']
+    avg_tvl_val = avg_tvl(day - 1, stock_num, parsed_data)
+    rco_tj = rco_matrix[day][stock_num]
+    avg_rco = rco_matrix[day][NUM_STOCKS]
+    return (a8_const * (tvl_t_minus1_j / avg_tvl_val) *
+            ((rco_tj - avg_rco)/NUM_STOCKS))
+
+def a9
+
+def sharp_ratio
+
+def rp2
+
+    #a vals
+
+AVG_TVL_CACHE = {}
+def avg_tvl(day, stock_num, parsed_data):
+    cache_key = str(day) + ',' + str(stock_num)
+    if (cache_key in AVG_TVL_CACHE):
+        return AVG_TVL_CACHE[cache_key]
+    avg_from = max(1, day - 200)
+    avg_to = day  - 1
+    num_vals = (avg_to + 1) - avg_from
+    sum_tvls = 0
+    for day in range(avg_from, (avg_to + 1)):
+        sum_tvls += parsed_data[day]['stocks'][stock_num]['tvl']
+    result = sum_tvls/num_vals
+    AVG_TVL_CACHE[cache_key] = result
+    return result
 
 
 def print_formatter(item):
@@ -134,7 +207,8 @@ def output(file_name, parsed_data):
     with open(file_name, 'w', newline='') as fp:
         file = csv.writer(fp, delimiter=',')
         data = []
-        header = ['yyyymmdd', 'RP#(t)', 'CumR(t)', 'Time Series 1', 'Time Series 2', 'W#(tj)']
+        header = ['yyyymmdd', 'RP#(t)', 'CumR(t)', 'Time Series 1',
+                  'Time Series 2', 'W#(tj)']
 
         data.append(header)
         rps = []
@@ -151,7 +225,8 @@ def output(file_name, parsed_data):
             time_series_1_val = time_series_1(day, weight_data_tj)
             row.append(print_formatter(time_series_1_val))
 
-            row.append(print_formatter(time_series_2(day, time_series_1_val, weight_data_tj)))
+            row.append(print_formatter(time_series_2(day, time_series_1_val,
+                                       weight_data_tj)))
 
             for stock in range(NUM_STOCKS):
                 row.append(print_formatter(weight_data_tj[day][stock]))
