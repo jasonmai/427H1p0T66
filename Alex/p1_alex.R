@@ -1,7 +1,22 @@
 N <- 100
 
+part1Data <- read.csv("sampleData.txt", header = FALSE)
 indexOfFirstClosePrice <- 5
 colsPerStock <- 6
+
+closePriceIndices <- seq(from = 5, to = ncol(part1Data), by = 6)
+openPriceIndices <- seq(from = 2, to = ncol(part1Data), by = 6)
+
+RCCSub1 <- part1Data[1:(length(part1Data[,1])-1), closePriceIndices]
+RCCSub2 <- part1Data[2:length(part1Data[,1]), closePriceIndices]
+RCCResult <- (RCCSub2 / RCCSub1) - 1
+
+RCCMat <- as.matrix(RCCResult)
+RCCMat <- rbind(rep(99, N), RCCMat)
+RCCResult <- as.data.frame(RCCMat)
+
+AvrRCCResult <- rowMeans(RCCResult)
+
 weights <- WeightMatrix()
 
 W1 = function(t, j) {
@@ -9,7 +24,7 @@ W1 = function(t, j) {
         return(99)
     }
     
-    -(1/N)*(RCC(t-1, j) - AvrRCC(t-1))
+    -(1/N)*(RCCResult[t-1, j] - AvrRCCResult[t-1])
 }
 
 RCC <- function(t, j) {
@@ -29,8 +44,8 @@ RP1 <- function(t) {
     if (t < 3) {
         return(99)
     }
-
-     sum(weights[t,] * RCCResult[t, ]) / sum(abs(weights[t, ]))
+    
+    sum(weights[t,] * RCCResult[t, ]) / sum(abs(weights[t, ]))
 }
 
 CumR <- function(t) {
@@ -56,7 +71,7 @@ AbsWeight <- function(t) {
     }
     
     result <- sum(abs(weights[t,]))
-
+    
     result
 }
 
@@ -94,5 +109,4 @@ generateReturns <- function() {
     
     result <- cbind(first5Cols, weights)
     write.table(result, "result.txt", sep=",")
-
 }
