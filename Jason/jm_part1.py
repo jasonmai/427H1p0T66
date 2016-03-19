@@ -80,7 +80,7 @@ def time_series_1(day, weight_matrix):
 def time_series_2(day, ts_1, weight_matrix):
     if (day < 2):
         return 99
-    return sum(weight_matrix[day])/ts_1
+    return sum(weight_matrix[day])/(ts_1 * NUM_STOCKS)
 
 def memoize_data(parsed_data):
     weight_data_tj = []
