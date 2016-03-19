@@ -1,3 +1,4 @@
+library('numDeriv')
 source('yu_lib.r')
 
 data <- read.table("../in_sample_data.txt", sep=",")

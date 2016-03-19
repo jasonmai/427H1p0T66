@@ -49,7 +49,7 @@ for (t in 1: (num_days - 1)){
     }
   }
 }
-b <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+b <- c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 W3 <- getW2(b)
 fill3 <- (W3 * ind_mat[3:num_days,]) >= 0
 RP3 <- rowSums(fill3 * W3 * roc[3:(num_days),]) / rowSums(abs(fill3 * W3))
