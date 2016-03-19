@@ -290,41 +290,39 @@ def memoize_component_vals(parsed_data, r_data):
             eq_comp_matrix[i].append(cs_rows[i])
     return eq_comp_matrix
 
+def generate_roc_matrix(parsed_data):
+    roc_matrix = []
+    for day in range(len(parsed_data)):
+        stock_rocs = []
+        for stock in range(NUM_STOCKS):
+            stock_rocs.append(roc(day, stock, parsed_data))
+        stock_rocs.append(sum(stock_rocs)/NUM_STOCKS)
+        roc_matrix.append(stock_rocs)
+    return roc_matrix
+
 def write_comp_vals(file_name, data):
     file = open(file_name, 'wb')
     pickle.dump(data, file)
-##    with open(file_name, 'w', newline='') as fp:
-##        file = csv.writer(fp, delimiter=',')
-##        file.writerows(data)
-
+    
 def read_saved_eq_comp_matrix_vals(file_name):
     return pickle.load(open(file_name, 'rb'))
-##    file = open(file_name, 'rt')
-##    raw_data = csv.reader(file)
-##    parsed_data = []
-##    for eq_num in raw_data:
-##        raw_day_data = csv.reader(eq_num)
-##        eq_vals = []
-##        for day in raw_day_data:
-##            day_vals = []
-##            #for val in list(day):
-##            #    day_vals.append(float(val))
-##            eq_vals.append(day_vals)
-##        parsed_data.append(eq_vals)
-##    return parsed_data
 
 def print_formatter(item):
     print_item = round(item, 7) + 0
     return format(print_item, '.7f')
 
-def output(file_name, parsed_data):
+def output(file_name, parsed_data, saved_data_exists):
 
-    r_data = memoize_r_data(parsed_data)
-    #eq_comp_matrix = memoize_component_vals(parsed_data, r_data)
-    #write_comp_vals(SAVED_EQ_FILE_NAME, eq_comp_matrix)
-    eq_comp_matrix = read_saved_eq_comp_matrix_vals(SAVED_EQ_FILE_NAME)
-    weight_matrix = generate_weight_matrix(eq_comp_matrix, parsed_data)
-    roc_matrix = r_data[3]
+    if (saved_data_exists):
+        eq_comp_matrix = read_saved_eq_comp_matrix_vals(SAVED_EQ_FILE_NAME)
+        weight_matrix = generate_weight_matrix(eq_comp_matrix, parsed_data)
+        roc_matrix = generate_roc_matrix(parsed_data)
+    else: 
+        r_data = memoize_r_data(parsed_data)
+        eq_comp_matrix = memoize_component_vals(parsed_data, r_data)
+        write_comp_vals(SAVED_EQ_FILE_NAME, eq_comp_matrix)
+        weight_matrix = generate_weight_matrix(eq_comp_matrix, parsed_data)
+        roc_matrix = r_data[3]
 
     with open(file_name, 'w', newline='') as fp:
         file = csv.writer(fp, delimiter=',')
@@ -358,4 +356,4 @@ def output(file_name, parsed_data):
 
 
 
-output('jm_p2_results.csv', parse_file('p1data'))
+output('jm_p2_results.csv', parse_file('p1data'), True)
