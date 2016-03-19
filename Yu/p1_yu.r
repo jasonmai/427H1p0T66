@@ -1,6 +1,6 @@
 source('yu_lib.r')
 
-data <- read.table("in_sample_data.txt", sep=",")
+data <- read.table("../in_sample_data.txt", sep=",")
 sc_indices <- 1 + 6 * 0:99 + 4
 sc_mat <- data[,sc_indices]
 N = 100
