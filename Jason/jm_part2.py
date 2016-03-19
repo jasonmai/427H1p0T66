@@ -3,7 +3,9 @@ import sys
 import math
 
 NUM_STOCKS = 100
-CONSTS = [1,1,1,1,1,1,1,1,1,1,1,1]
+#CONSTS = [1,1,1,1,1,1,1,1,1,1,1,1]
+#CONSTS = [1,0,0,0,0,0,0,0,0,0,0,0]
+CONSTS = [0,0,0,0,1,0,0,0,0,0,0,0]
 
 #data[day][date/stock][stock_num][stock_val]
 def parse_file(file_name):
@@ -30,34 +32,12 @@ def parse_file(file_name):
         parsed_data.append(date_stocks)
     return parsed_data
 
-
-def weight(day, stock_num, rcc_matrix):
-    if (day < 2):
-        return 99
-    init_val = -(1/NUM_STOCKS)
-    rcc_val = rcc_matrix[day - 1][stock_num]
-    avg_rcc_val = avg_rcc(day - 1, rcc_matrix)
-    return init_val * (rcc_val - avg_rcc_val)
-
 def rcc(day, stock_num, parsed_data):
     if (day < 1):
         return 99
     sc_tj = parsed_data[day]['stocks'][stock_num]['sc']
     sc_t_minus1_j = parsed_data[day - 1]['stocks'][stock_num]['sc']
     return (sc_tj/sc_t_minus1_j) - 1
-
-def avg_func(day, rxx_matrix):
-    return sum(rxx_matrix[day])/NUM_STOCKS
-
-def rp(day, weight_matrix, rcc_matrix):
-    if (day < 2):
-        return 99
-    sum_numerator = 0
-    sum_denom = 0
-    for i in range(NUM_STOCKS):
-        sum_numerator += weight_matrix[day][i] * rcc_matrix[day][i]
-        sum_denom += abs(weight_matrix[day][i])
-    return sum_numerator/sum_denom
 
 def cumR(day, rp_values):
     if (day < 2):
@@ -101,9 +81,9 @@ def roo(day, stock_num, parsed_data):
     return (so_tj/so_t_minus_1_j) - 1
 
 def rvp(day, stock_num, parsed_data):
-    init_val = (1/(4*(log(2))))
-    ln_sh = log(parsed_data[day]['stocks'][stock_num]['sh'])
-    ln_sl = log(parsed_data[day]['stocks'][stock_num]['sl'])
+    init_val = (1/(4*(math.log(2))))
+    ln_sh = math.log(parsed_data[day]['stocks'][stock_num]['sh'])
+    ln_sl = math.log(parsed_data[day]['stocks'][stock_num]['sl'])
     return init_val * ((ln_sh - ln_sl) ** 2)
 
 def a1(day, stock_num, a1_const, rcc_matrix):
@@ -117,12 +97,12 @@ def a2(day, stock_num, a2_const, roo_matrix):
     return a2_const * ((roo_tj - avg_roo)/NUM_STOCKS)
 
 def a3(day, stock_num, a3_const, roc_matrix):
-    roc_t_minu1_j = rcc_matrix[day - 1][stock_num]
+    roc_t_minu1_j = roc_matrix[day - 1][stock_num]
     avg_roc = roc_matrix[day - 1][NUM_STOCKS]
     return a3_const * ((roc_t_minu1_j - avg_roc)/NUM_STOCKS)
 
 def a4(day, stock_num, a4_const, rco_matrix):
-    rco_tj = roo_matrix[day][stock_num]
+    rco_tj = rco_matrix[day][stock_num]
     avg_rco = rco_matrix[day][NUM_STOCKS]
     return a4_const * ((rco_tj - avg_rco)/NUM_STOCKS)
 
@@ -190,14 +170,16 @@ def a12(day, stock_num, a12_const, rco_matrix, parsed_data):
     return (a12_const * (rvp_t_minus1_j / avg_rvp_val) *
             ((rco_tj - avg_rco)/NUM_STOCKS))
 
-def weight2(day, stock_num, rcc_matrix, roo_matrix, roc_matrix, rco_matrix):
+def weight2(day, stock_num, parsed_data, rcc_matrix, roo_matrix, roc_matrix, rco_matrix):
+    if (day < 2):
+        return 99
 
     constants = CONSTS
 
-    return (a1(day, stock_num, constants[0], rcc_matrix, parsed_data) +
-            a2(day, stock_num, constants[1], roo_matrix, parsed_data) +
-            a3(day, stock_num, constants[2], roc_matrix, parsed_data) +
-            a4(day, stock_num, constants[3], rco_matrix, parsed_data) +
+    return (a1(day, stock_num, constants[0], rcc_matrix) +
+            a2(day, stock_num, constants[1], roo_matrix) +
+            a3(day, stock_num, constants[2], roc_matrix) +
+            a4(day, stock_num, constants[3], rco_matrix) +
             a5(day, stock_num, constants[4], rcc_matrix, parsed_data) +
             a6(day, stock_num, constants[5], roo_matrix, parsed_data) +
             a7(day, stock_num, constants[6], roc_matrix, parsed_data) +
@@ -207,13 +189,24 @@ def weight2(day, stock_num, rcc_matrix, roo_matrix, roc_matrix, rco_matrix):
             a11(day, stock_num, constants[10], roc_matrix, parsed_data) +
             a12(day, stock_num, constants[11], rco_matrix, parsed_data))
 
+def rp2(day, weight_matrix, roc_matrix):
+    if (day < 2):
+        return 99
+    sum_numerator = 0
+    sum_denom = 0
+    for i in range(NUM_STOCKS):
+        sum_numerator += weight_matrix[day][i] * roc_matrix[day][i]
+        sum_denom += abs(weight_matrix[day][i])
+    return sum_numerator/sum_denom
+
+
 AVG_TVL_CACHE = {}
 def avg_tvl(day, stock_num, parsed_data):
     cache_key = str(day) + ',' + str(stock_num)
     if (cache_key in AVG_TVL_CACHE):
         return AVG_TVL_CACHE[cache_key]
-    avg_from = max(1, day - 200)
-    avg_to = day  - 1
+    avg_from = max(0, day - 199)
+    avg_to = day
     num_vals = (avg_to + 1) - avg_from
     sum_tvls = 0
     for day in range(avg_from, (avg_to + 1)):
@@ -227,8 +220,8 @@ def avg_rvp(day, stock_num, parsed_data):
     cache_key = str(day) + ',' + str(stock_num)
     if (cache_key in AVG_RVP_CACHE):
         return AVG_RVP_CACHE[cache_key]
-    avg_from = max(1, day - 200)
-    avg_to = day  - 1
+    avg_from = max(0, day - 199)
+    avg_to = day
     num_vals = (avg_to + 1) - avg_from
     sum_rvps = 0
     for day in range(avg_from, (avg_to + 1)):
@@ -253,17 +246,17 @@ def memoize_data(parsed_data):
             stock_roos.append(roo(day, stock, parsed_data))
             stock_rcos.append(rco(day, stock, parsed_data))
             stock_rocs.append(roc(day, stock, parsed_data))
-        stock_rccs.append(sum(stock_rccs))
-        stock_roos.append(sum(stock_roos))
-        stock_rcos.append(sum(stock_rcos))
-        stock_rocs.append(sum(stock_rocs))
+        stock_rccs.append(sum(stock_rccs)/NUM_STOCKS)
+        stock_roos.append(sum(stock_roos)/NUM_STOCKS)
+        stock_rcos.append(sum(stock_rcos)/NUM_STOCKS)
+        stock_rocs.append(sum(stock_rocs)/NUM_STOCKS)
         rcc_matrix.append(stock_rccs)
         roo_matrix.append(stock_roos)
         rco_matrix.append(stock_rcos)
         roc_matrix.append(stock_rocs)
         stock_weights2 = []
         for stock in range(NUM_STOCKS):
-            stock_weights2.append(weight2(day, stock, rcc_matrix,
+            stock_weights2.append(weight2(day, stock, parsed_data, rcc_matrix,
                                           roo_matrix, roc_matrix, rco_matrix))
         weight2_matrix.append(stock_weights2)
     return [weight2_matrix, roc_matrix]
@@ -290,20 +283,20 @@ def output(file_name, parsed_data):
             row = []
             row.append(parsed_data[day]['date'])
 
-            # rp_val = rp(day, weight_data_tj, rcc_data_tj)
-            # rps.append(rp_val)
-            # row.append(print_formatter(rp_val))
-            # 
-            # row.append(print_formatter(cumR(day, rps)))
-            #
-            # time_series_1_val = time_series_1(day, weight_data_tj)
-            # row.append(print_formatter(time_series_1_val))
-            #
-            # row.append(print_formatter(time_series_2(day, time_series_1_val,
-            #                            weight_data_tj)))
+            rp_val = rp2(day, weight2_matrix, roc_matrix)
+            rps.append(rp_val)
+            row.append(print_formatter(rp_val))
+            
+            row.append(print_formatter(cumR(day, rps)))
+
+            time_series_1_val = time_series_1(day, weight2_matrix)
+            row.append(print_formatter(time_series_1_val))
+            
+            row.append(print_formatter(time_series_2(day, time_series_1_val,
+                                       weight2_matrix)))
 
             for stock in range(NUM_STOCKS):
-                row.append(print_formatter(weight_data_tj[day][stock]))
+                row.append(print_formatter(weight2_matrix[day][stock]))
             data.append(row)
 
         file.writerows(data)
