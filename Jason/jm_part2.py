@@ -5,8 +5,8 @@ import pickle
 
 NUM_STOCKS = 100
 SAVED_EQ_FILE_NAME = 'saved_eq_vals'
-#CONSTS = [1,1,1,1,1,1,1,1,1,1,1,1]
-CONSTS = [1,0,0,0,0,0,0,0,0,0,0,0]
+CONSTS = [1,1,1,1,1,1,1,1,1,1,1,1]
+#CONSTS = [1,0,0,0,0,0,0,0,0,0,0,0]
 #CONSTS = [0,0,0,0,1,0,0,0,0,0,0,0]
 
 #data[day][date/stock][stock_num][stock_val]
