@@ -219,21 +219,21 @@ def avg_rvp(day, stock_num, parsed_data):
     AVG_RVP_CACHE[cache_key] = result
     return result
 
-def weight(day, stock_num, eq_comp_matrix):
+def weight(day, stock_num, eq_comp_matrix, constants):
     if (day < 2):
         return 99
-    constants = CONSTS
     result = 0
     for i in range(12):
         result += constants[i] * eq_comp_matrix[i][day][stock_num]
     return result
 
-def generate_weight_matrix(eq_comp_matrix, parsed_data):
+def generate_weight_matrix(eq_comp_matrix, constants, parsed_data):
     weight_matrix = []
     for day in range(len(parsed_data)):
         stock_weights = []
         for stock_num in range(NUM_STOCKS):
-            stock_weights.append(weight(day, stock_num, eq_comp_matrix))
+            stock_weights.append(weight(day, stock_num, eq_comp_matrix,
+								 constants))
         weight_matrix.append(stock_weights)
     return weight_matrix
 
@@ -315,7 +315,7 @@ def read_saved_eq_comp_matrix_vals(file_name):
     return pickle.load(open(file_name, 'rb'))
 
 
-def sharp_ratio(rps):
+def sharpe_ratio(rps):
     actual_rps = rps[2:]
     avg_returns = statistics.mean(actual_rps)
     stdev_returns = statistics.stdev(actual_rps)
@@ -329,17 +329,19 @@ def print_formatter(item):
     #return format(print_item, '.7f')
 
 
-def output(file_name, parsed_data, saved_data_exists):
+def output(file_name, parsed_data, constants, saved_data_exists):
 
     if (saved_data_exists):
         eq_comp_matrix = read_saved_eq_comp_matrix_vals(SAVED_EQ_FILE_NAME)
-        weight_matrix = generate_weight_matrix(eq_comp_matrix, parsed_data)
+        weight_matrix = generate_weight_matrix(eq_comp_matrix, constants,
+											   parsed_data)
         roc_matrix = generate_roc_matrix(parsed_data)
     else: 
         r_data = memoize_r_data(parsed_data)
         eq_comp_matrix = memoize_component_vals(parsed_data, r_data)
         write_comp_vals(SAVED_EQ_FILE_NAME, eq_comp_matrix)
-        weight_matrix = generate_weight_matrix(eq_comp_matrix, parsed_data)
+        weight_matrix = generate_weight_matrix(eq_comp_matrix, constants,
+											   parsed_data)
         roc_matrix = r_data[3]
 
     with open(file_name, 'w', newline='') as fp:
@@ -374,41 +376,39 @@ def output(file_name, parsed_data, saved_data_exists):
 
 
 
-def generate_rps(parsed_data):
+def generate_rps(constants, parsed_data):
     eq_comp_matrix = read_saved_eq_comp_matrix_vals(SAVED_EQ_FILE_NAME)
-    weight_matrix = generate_weight_matrix(eq_comp_matrix, parsed_data)
+    weight_matrix = generate_weight_matrix(eq_comp_matrix, constants,
+										   parsed_data)
     roc_matrix = generate_roc_matrix(parsed_data)
     rps = []
     for day in range(len(parsed_data)):
         rps.append(rp2(day, weight_matrix, roc_matrix))
     return rps
 
-#output('jm_p2_results.csv', parse_file('p1data'), True)
-#output('jm_p2_results.csv', parse_file('p1data'), False)
+#output('jm_p2_results.csv', parse_file('p1data'), CONSTS, True)
+#output('jm_p2_results.csv', parse_file('p1data'), CONSTS, False)
 
-##rps = generate_rps(parse_file('p1data'))
-##sharp = sharp_ratio(rps)
+##rps = generate_rps(CONSTS, parse_file('p1data'))
+##sharpe = sharpe_ratio(rps)
 
-def get_sharp(a,b,c,d,e,f,g,h,i,j,k,l):
-    CONSTS = []
-    CONSTS = [a,b,c,d,e,f,g,h,i,j,k,l]
-    #CONSTS = [1,1,1,1,1,1,1,1,1,1,1,1]
-    rps = generate_rps(parse_file('p1data'))
-    sharp = sharp_ratio(rps)
-    print(sharp)
+def get_sharpe(a,b,c,d,e,f,g,h,i,j,k,l):
+    rps = generate_rps([a,b,c,d,e,f,g,h,i,j,k,l], parse_file('p1data'))
+    sharpe = sharpe_ratio(rps)
+    print(sharpe)
     
 
 
 for i in range(10000):
-    CONSTS = []
+    constants = []
     for i in range(12):
         rand = random.randint(-10000,10000)
         rand += random.randint(-100000000000,100000000000)/100000000000
-        CONSTS.append(rand)
-    rps = generate_rps(parse_file('p1data'))
-    sharp = sharp_ratio(rps)
-    print(CONSTS, ' : ', sharp_ratio(rps))
-    if (sharp > 0.4):
+        constants.append(rand)
+    rps = generate_rps(constants, parse_file('p1data'))
+    sharpe = sharpe_ratio(rps)
+    print(constants, ' : ', sharpe_ratio(rps))
+    if (sharpe > 0.4):
         break;
 
 
