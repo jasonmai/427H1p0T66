@@ -13,6 +13,7 @@ CONSTS = [1,1,1,1,1,1,1,1,1,1,1,1]
 #CONSTS = [0,0,0,0,1,0,0,0,0,0,0,0]
 #CONSTS = [0,0,1,0,0,0,0,0,0,0,0,0]
 #CONSTS = [0,0,0,0,0,0,1,0,0,0,0,0]
+#CONSTS = [0,1,0,0,0,0,0,0,0,0,1,0]
 
 #data[day][date/stock][stock_num][stock_val]
 def parse_file(file_name):
@@ -385,16 +386,21 @@ def generate_rps(parsed_data):
 #output('jm_p2_results.csv', parse_file('p1data'), True)
 #output('jm_p2_results.csv', parse_file('p1data'), False)
 
+##rps = generate_rps(parse_file('p1data'))
+##sharp = sharp_ratio(rps)
+
 
 for i in range(1000):
     CONSTS = []
     for i in range(12):
-        CONSTS.append(random.randint(-10000,10000)/10000)
+        rand = random.randint(-10000,10000)
+        rand += random.randint(-100000000000,100000000000)/100000000000
+        CONSTS.append(rand)
+    CONSTS[4] = 1
     rps = generate_rps(parse_file('p1data'))
     sharp = sharp_ratio(rps)
+    print(CONSTS, ' : ', sharp_ratio(rps))
     if (sharp > 0.4):
-        print(CONSTS, ' : ', sharp_ratio(rps))
-    else:
-        print('.')
+        break;
 
 
