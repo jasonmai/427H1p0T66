@@ -448,15 +448,51 @@ def gs(constants):
     return get_sharpe_opt(constants, LOADED_FILE)
 
 
-for i in range(10000):
-    constants = []
-    for i in range(12):
-        rand = random.randint(-2,2)
-        rand += random.randint(-100000000000,100000000000)/100000000000
-        constants.append(rand)
-    sharpe = gs(constants)
-    print(constants, ' : ', sharpe)
-    if (sharpe > 0.4):
-       break;
+def random_algo():
+    for i in range(10000):
+        constants = []
+        for i in range(12):
+            rand = random.randint(-2,2)
+            rand += random.randint(-100000000000,100000000000)/100000000000
+            constants.append(rand)
+        sharpe = gs(constants)
+        if (sharpe > 0.4):
+            print(constants, ' : ', sharpe)
+            break;
+        else:
+            print('.', end='')
+
+def random_algo2():
+    for i in range(10000):
+        constants = [-0.14951564, -0.4744389, 0.8760662, -1.874715, 0.166849, -0.3826503, 0.2115474, 0.177571, -0.2179634, -0.03938351, 0.1606311, 0.302414]
+        for i in range(12):
+            constants[i] += random.randint(-100000000000,100000000000)/100000000000
+        sharpe = gs(constants)
+        if (sharpe > 0.437):
+            print(constants, ' : ', sharpe)
+            break;
+        else:
+            print('.', end='')
+
+def hill_climbing(starting_constants):
+    constants = starting_constants[:]
+    current_best_sharpe = gs(starting_constants)
+    current_a_to_vary = random.randint(0,11)
+    while (True):
+        amount_to_vary = random.randint(-100000000000,100000000000)/100000000000
+        amount_to_vary += random.randint(-2,2)
+        temp_constants = constants[:]
+        temp_constants[current_a_to_vary] += amount_to_vary
+        sharpe = gs(temp_constants)
+        if (sharpe > current_best_sharpe):
+            print(sharpe, ' : ', temp_constants)
+            current_best_sharpe = sharpe
+            constants = temp_constants
+        else:
+            print('.', end)
+            current_a_to_vary = random.randint(0,11)
+        
+
+hill_climbing([-0.08911538287000001, -0.53621066426, 0.8760662, -1.87618043702, 0.166849, -0.34789106041999995, 0.2115474, 0.177571, -0.2179634, -0.03938351, 0.1606311, 0.302414])
 
 
