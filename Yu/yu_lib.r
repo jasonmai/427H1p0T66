@@ -103,3 +103,5 @@ stochastic_gradient_descent <- function(training_day_num, batch_size){
   return (a)
   
 }
+
+
