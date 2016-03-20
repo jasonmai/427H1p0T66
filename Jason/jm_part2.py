@@ -389,14 +389,22 @@ def generate_rps(parsed_data):
 ##rps = generate_rps(parse_file('p1data'))
 ##sharp = sharp_ratio(rps)
 
+def get_sharp(a,b,c,d,e,f,g,h,i,j,k,l):
+    CONSTS = []
+    CONSTS = [a,b,c,d,e,f,g,h,i,j,k,l]
+    #CONSTS = [1,1,1,1,1,1,1,1,1,1,1,1]
+    rps = generate_rps(parse_file('p1data'))
+    sharp = sharp_ratio(rps)
+    print(sharp)
+    
 
-for i in range(1000):
+
+for i in range(10000):
     CONSTS = []
     for i in range(12):
         rand = random.randint(-10000,10000)
         rand += random.randint(-100000000000,100000000000)/100000000000
         CONSTS.append(rand)
-    CONSTS[4] = 1
     rps = generate_rps(parse_file('p1data'))
     sharp = sharp_ratio(rps)
     print(CONSTS, ' : ', sharp_ratio(rps))
