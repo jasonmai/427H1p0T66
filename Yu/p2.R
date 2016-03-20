@@ -51,17 +51,39 @@ for (t in 1: (num_days - 1)){
   }
 }
 
+  test <- matrix(avrRCC[1:(num_days - 2)], nrow = num_days - 2,ncol = 100)
+  Q1 <- (rcc[1:(num_days - 2),] - test) / N
+  
+  test <- matrix(avrROO[2:(num_days - 1)], nrow = num_days - 2,ncol = 100)
+  Q2 <- (roo[2:(num_days - 1),] - test) / N
+  
+  test <- matrix(avrROC[1:(num_days - 2)], nrow = num_days - 2,ncol = 100)
+  Q3 <- (roc[1:(num_days - 2),] - test) / N
+  
+  test <- matrix(avrRCO[2:(num_days - 1)], nrow = num_days - 2,ncol = 100)
+  Q4 <- (rco[2:(num_days - 1),] - test) / N
+  
+  Q5 <- Q1 * tvl_mat[2:(num_days - 1),] / avrTVL[2:(num_days - 1),]
+  Q6 <- Q2 * tvl_mat[2:(num_days - 1),] / avrTVL[2:(num_days - 1),]
+  Q7 <- Q3 * tvl_mat[2:(num_days - 1),] / avrTVL[2:(num_days - 1),]
+  Q8 <- Q4 * tvl_mat[2:(num_days - 1),] / avrTVL[2:(num_days - 1),]
+  
+  Q9 <- Q1 * rvp[2:(num_days - 1),] / avrRVP[2:(num_days - 1),]
+  Q10 <- Q2 * rvp[2:(num_days - 1),] / avrRVP[2:(num_days - 1),]
+  Q11 <- Q3 * rvp[2:(num_days - 1),] / avrRVP[2:(num_days - 1),]
+  Q12 <- Q4 * rvp[2:(num_days - 1),] / avrRVP[2:(num_days - 1),]
+
 a <- stochastic_gradient_descent(600, 300)
 #a <- rep(1, 12)
 a <- rep(0, 12)
-a[10] <- 1
+a[12] <- 1
 
 #a <- c(0.5891798, 1.019876, -0.2498859, -6.685727, 0.6505215, -0.6545521, 0.07183188, 1.107381, -0.7832779, 0.410139, -0.1511953, -0.2990031)
 #a <- c(1.149473, 3.129871, 0.2192001, -18.15229, 1.76555, -1.626993, -0.1536617, 1.954675, -1.962249, 0.8841682, -0.5954123, 0.01034994)
 #a <- c(0.09715403, 4.715921, -0.3932329, -23.25983, 1.684965, -1.729966, -0.3329639, 2.401324, -1.814161, 0.7962605, -0.3231082, 0.1524329)
 W2 <- getW2(a)
 RP2 <- rowSums(W2 * roc[3:(num_days),]) / rowSums(abs(W2))
-output_mat <- output(data[,1], RP2, W2, 2)
+output_mat <- output(data[,1], RP2, W2, '2_a12=1')
 
 sharpe <- mean(RP2[600:1001])/sd(RP2[600:1001])
 plot(RP2, pch = '.')
