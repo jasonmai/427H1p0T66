@@ -5,11 +5,11 @@ import pickle
 
 NUM_STOCKS = 100
 SAVED_EQ_FILE_NAME = 'saved_eq_vals'
-#CONSTS = [1,1,1,1,1,1,1,1,1,1,1,1]
+CONSTS = [1,1,1,1,1,1,1,1,1,1,1,1]
 #CONSTS = [1,0,0,0,0,0,0,0,0,0,0,0]
 #CONSTS = [0,1,0,0,0,0,0,0,0,0,0,0]
 #CONSTS = [0,0,0,0,1,0,0,0,0,0,0,0]
-CONSTS = [0,0,1,0,0,0,0,0,0,0,0,0]
+#CONSTS = [0,0,1,0,0,0,0,0,0,0,0,0]
 #CONSTS = [0,0,0,0,0,0,1,0,0,0,0,0]
 
 #data[day][date/stock][stock_num][stock_val]
@@ -361,5 +361,5 @@ def output(file_name, parsed_data, saved_data_exists):
         file.writerows(data)
 
 
-#output('jm_p2_results.csv', parse_file('p1data'), True)
-output('jm_p2_results.csv', parse_file('p1data'), False)
+output('jm_p2_results.csv', parse_file('p1data'), True)
+#output('jm_p2_results.csv', parse_file('p1data'), False)
