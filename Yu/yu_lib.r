@@ -53,6 +53,12 @@ getSharpe_train <- function(a, training_day_num, random_indices){
   return (mean(RP2[random_indices])/sd(RP2[random_indices]) - weight_penalty * abs(sum(a) - 12))
 }
 
+getSharpe_BA <- function(a, training_day_num){
+  W2 <- getW2(a, training_day_num)
+  RP2 <- rowSums(W2[1:(training_day_num - 2),] * roc[3:(training_day_num),]) / rowSums(abs(W2[1:(training_day_num - 2),]))
+  return(mean(RP2)/sd(RP2))
+}
+
 stochastic_gradient_descent <- function(training_day_num, batch_size){
   a <- rep(0, 12)
   a[5] <- 1
@@ -83,5 +89,58 @@ stochastic_gradient_descent <- function(training_day_num, batch_size){
 }
 
 bee_Algorithm <- function(training_day_num){
+  initial_population <- 500
+  best_patch <- 1
+  elite_patch <- 10
+  nep <- 50
+  nsp <- 20
+  ngh <- 0.1
   
+  max_iteration <- 2000
+  error <- 0.00001
+  bees <- matrix(0, nrow = initial_population, ncol = 13)
+  bees[,2:13] <- matrix(runif(initial_population * 12, min = -1, max = 1), nrow = initial_population, ncol = 12)
+  best_sharpe <- -100
+  for (i in 1:max_iteration){
+    if (i %% 2 == 0){
+      cat('iteration ', i, '\n')
+      cat(bees[1,2:13], '\n')
+      cat('sharpe ratio: ', getSharpe_BA(bees[1,2:13], training_day_num), '\n')
+    }
+    for(b in 1:initial_population){
+      bees[b,1] <- getSharpe_BA(bees[b,2:13], training_day_num)
+    }
+    bees <- bees[order(bees[,1], decreasing = TRUE),]
+    if (bees[1,1] - best_sharpe < error){
+      return (bees[1,2:13])
+    }
+    else{
+      best_sharpe <- bees[1,1]
+      new_bees <- matrix(0, nrow = initial_population, ncol = 13)
+      best_bees <- bees[1:best_patch,2:13]
+      dim(best_bees) <- c(best_patch, 12)
+      elite_bees <- bees[(best_patch + 1):(best_patch + elite_patch), 2:13]
+      for (b in 1:best_patch){
+        new_patch <- matrix(0, nrow = nep, ncol = 12)
+        new_patch[1,] <- best_bees[b,]
+        for (j in 1:12){
+          new_patch[2:nep,j] <- runif(nep - 1, min = best_bees[b,j]-ngh, max = best_bees[b,j] + ngh)
+        }
+        new_bees[((b-1) * nep + 1):(b*nep),2:13] <- new_patch
+      }
+      start_index <- best_patch * nep
+      for (b in 1:elite_patch){
+        new_patch <- matrix(0, nrow = nsp, ncol = 12)
+        for (j in 1:12){
+          new_patch[1:nsp,j] <- runif(nsp, min = elite_bees[b,j]-ngh, max = elite_bees[b,j] + ngh)
+        }
+        new_bees[(start_index + ((b-1)*nsp + 1)):(start_index + (b)*nsp),2:13] <- new_patch
+      }
+      start_index <- best_patch * nep + elite_patch * nsp
+      new_bees[(start_index + 1):initial_population,2:13] <- matrix(runif((initial_population - start_index) * 12, min = -1, max = 1), 
+                                                                nrow = initial_population - start_index, ncol = 12)
+      bees <- new_bees
+    }
+  }
+  return(bees[1,2:13])
 }
