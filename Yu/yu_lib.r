@@ -41,28 +41,6 @@ getW2 <- function(a, days = num_days){
   a11 = a[11]
   a12 = a[12]
   
-#   test <- matrix(avrRCC[1:(num_days - 2)], nrow = num_days - 2,ncol = 100)
-#   Q1 <- (rcc[1:(num_days - 2),] - test) / N
-#   
-#   test <- matrix(avrROO[2:(num_days - 1)], nrow = num_days - 2,ncol = 100)
-#   Q2 <- (roo[2:(num_days - 1),] - test) / N
-#   
-#   test <- matrix(avrROC[1:(num_days - 2)], nrow = num_days - 2,ncol = 100)
-#   Q3 <- (roc[1:(num_days - 2),] - test) / N
-#   
-#   test <- matrix(avrRCO[2:(num_days - 1)], nrow = num_days - 2,ncol = 100)
-#   Q4 <- (rco[2:(num_days - 1),] - test) / N
-#   
-#   Q5 <- Q1 * tvl_mat[2:(num_days - 1),] / avrTVL[2:(num_days - 1),]
-#   Q6 <- Q2 * tvl_mat[2:(num_days - 1),] / avrTVL[2:(num_days - 1),]
-#   Q7 <- Q3 * tvl_mat[2:(num_days - 1),] / avrTVL[2:(num_days - 1),]
-#   Q8 <- Q4 * tvl_mat[2:(num_days - 1),] / avrTVL[2:(num_days - 1),]
-#   
-#   Q9 <- Q1 * rvp[2:(num_days - 1),] / avrRVP[2:(num_days - 1),]
-#   Q10 <- Q2 * rvp[2:(num_days - 1),] / avrRVP[2:(num_days - 1),]
-#   Q11 <- Q3 * rvp[2:(num_days - 1),] / avrRVP[2:(num_days - 1),]
-#   Q12 <- Q4 * rvp[2:(num_days - 1),] / avrRVP[2:(num_days - 1),]
-#   
   return(a1 * Q1 + a2 * Q2 + a3 * Q3 + a4 * Q4 + a5 * Q5 + a6 * Q6 + 
            a7 * Q7 + a8 * Q8 + a9 * Q9 + a10 * Q10 + a11 * Q11 + a12 * Q12)
   
@@ -104,4 +82,6 @@ stochastic_gradient_descent <- function(training_day_num, batch_size){
   
 }
 
-
+bee_Algorithm <- function(training_day_num){
+  
+}
