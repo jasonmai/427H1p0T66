@@ -73,17 +73,26 @@ Q11 <- Q3 * rvp[2:(num_days - 1),] / avrRVP[2:(num_days - 1),]
 Q12 <- Q4 * rvp[2:(num_days - 1),] / avrRVP[2:(num_days - 1),]
 
 #b <- c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-system.time({b <- bee_Algorithm(1000)})
-b_n <- rep(0, 12)
-b_n[c(3:4, 7:8, 11:12)] <- b
-b <- b_n
-#b <- stochastic_gradient_descent(600, 300)
+b <- c(0.00000000,  0.00000000,  0.17365863, -1.21662467,  0.00000000,  0.00000000, -0.02856933,  0.17573032,  0.00000000, 0.00000000, -0.02474287,0.13901608)
+# system.time({b <- bee_Algorithm(600)})
+# b_n <- rep(0, 12)
+# b_n[c(3:4, 7:8, 11:12)] <- b
+# b <- b_n
+# #b <- stochastic_gradient_descent(600, 300)
+# b_alt <- b[b != 0]
+# W3_alt <- getW2Spe(b_alt)
+# 
+#b <- rep(1, 12)
 
 W3 <- getW2(b)
 fill3 <- (W3 * ind_mat[3:num_days,]) >= 0
 RP3 <- rowSums(fill3 * W3 * roc[3:(num_days),]) / rowSums(abs(fill3 * W3))
 RP3[is.nan(RP3)] = 0
-output_mat <- output(data[,1], RP3, W3, 3)
+output_mat <- output(data[,1], RP3, fill3 * W3, 3)
+output_params <- output_params(b,3)
 
-sharpe <- mean(RP3[600:1001])/sd(RP3[600:1001])
+sharpe_train <- mean(RP3[1:600])/sd(RP3[1:600])
+sharpe_val <- mean(RP3[600:1001])/sd(RP3[600:1001])
 sharpe_total <- mean(RP3)/sd(RP3)
+
+pdf_out(RP3)

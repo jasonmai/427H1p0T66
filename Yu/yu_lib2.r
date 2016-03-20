@@ -1,5 +1,5 @@
 output <- function(dates, RP, W, Qnum){
-  filename <- paste('question ', Qnum,".csv", sep = '')
+  filename <- paste('data_part ', Qnum,".team32.csv", sep = '')
   N <- ncol(W)
   stock_label <- 1:N
   header <- c('date', 'return', 'cumulative return', 'mean absolute weight', 'mean weight')
@@ -20,6 +20,18 @@ output <- function(dates, RP, W, Qnum){
   write(header, file = filename, ncolumns = 5 + N, sep = ",")
   write(t(output_mat), file = filename, ncolumns = 5 + N, sep = ",", append = TRUE)
   return(output_mat)
+}
+
+output_params <- function(params, Qnum){
+  filename <- paste('coeff_part ', Qnum,".team32.csv", sep = '')
+  if (Qnum == 2){
+    header <- paste('a', c(1:12), sep = '')
+  }
+  else{
+    header <- paste('b', c(1:12), sep = '')
+  }
+  write(header, file = filename, ncolumns = 12, sep = ",")
+  write(t(params), file = filename, ncolumns = 12, sep = ",", append = TRUE)
 }
 
 getW2 <- function(a, days = num_days){
@@ -75,7 +87,7 @@ getSharpe_train <- function(b, training_day_num, random_indices){
 getSharpe_BA <- function(b, training_day_num){
   W3 <- getW2Spe(b, training_day_num)
   fill3 <- (W3 * ind_mat[3:num_days,]) >= 0
-  RP3 <- rowSums(fill3[3:(training_day_num),] * W3[1:(training_day_num - 2),] * roc[3:(training_day_num),]) / rowSums(abs(fill3[3:(training_day_num),] * W3[1:(training_day_num - 2),]))
+  RP3 <- rowSums(fill3[1:(training_day_num - 2),] * W3[1:(training_day_num - 2),] * roc[3:(training_day_num),]) / rowSums(abs(fill3[1:(training_day_num - 2),] * W3[1:(training_day_num - 2),]))
   RP3[is.nan(RP3)] = 0
   return(mean(RP3)/sd(RP3))
 }
@@ -116,7 +128,7 @@ bee_Algorithm <- function(training_day_num){
   ngh <- 0.1
   num_a <- 6
   max_iteration <- 1000
-  min_iteration <- 50
+  min_iteration <- 30
   error <- 0.00001
   bees <- matrix(0, nrow = initial_population, ncol = num_a + 1)
   bees[,2:(num_a + 1)] <- matrix(runif(initial_population * num_a, min = -1, max = 1), nrow = initial_population, ncol = num_a)
@@ -170,4 +182,22 @@ bee_Algorithm <- function(training_day_num){
     }
   }
   return(bees[1,2:(num_a + 1)])
+}
+
+pdf_out <- function(RP1){
+  cum_log_return <- cumsum(log(1 + RP1))
+  cat('average daily log return:', mean(log(1 + RP1)), '\n')
+  cat('std of daily log return:', sd(log(1 + RP1)), '\n')
+  cat('annualized SR: ', sqrt(252) * mean(RP1)/sd(RP1), '\n')
+  cat('skewness:', skewness(RP1), '\n')
+  cat('kurtosis:', kurtosis(RP1), '\n')
+  cat('max draw down: ', exp(min(cum_log_return)), '\n')
+  t <- which.min(cum_log_return)
+  t0 <- which.max(cum_log_return[1:t])
+  cat('length of max drawdown period:', t - t0, '\n')
+  cat('cumulative return during draw down: ', exp(min(cum_log_return)) - exp(cum_log_return[t0]), '\n')
+  W_eq <- matrix(1, nrow = num_days - 2, ncol = N)
+  RP_eq <- rowSums(W_eq * rcc[2:(num_days-1),]) / rowSums(abs(W_eq))
+  
+  cat('correlation with equally weighted long portfolio:', cor(RP_eq, RP1), '\n')
 }

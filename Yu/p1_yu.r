@@ -1,4 +1,5 @@
 library('numDeriv')
+library('moments')
 source('yu_lib.r')
 
 data <- read.table("../in_sample_data.txt", sep=",")
@@ -12,3 +13,7 @@ test <- matrix(avrRCC[1:(num_days - 2)], nrow = num_days - 2,ncol = 100)
 W1 <- -1 / N * (rcc[1:(num_days - 2),] - test)
 RP1 <- rowSums(W1 * rcc[2:(num_days-1),]) / rowSums(abs(W1))
 output_mat <- output(data[,1], RP1, W1, 1)
+cum_log_return <- cumsum(log(1 + RP1))
+
+pdf_out(RP1)
+
