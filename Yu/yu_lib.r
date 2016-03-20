@@ -62,18 +62,18 @@ getSharpe_BA <- function(a, training_day_num){
 stochastic_gradient_descent <- function(training_day_num, batch_size){
   a <- rep(0, 12)
   a[5] <- 1
-  initial_step_size <- 5
-  inf_step_size = 0.1
-  max_iter <- 100000
+  initial_step_size <- 1
+  inf_step_size = 0.03
+  max_iter <- 1000
   threshold <- 0.00001
   momentum = rep(0, 12)
-  momentum_factor = 0.9
+  momentum_factor = 0.7
   for (i in 1:max_iter){
     old_a <- a
     random_indices <- sample(1:(training_day_num - 2), batch_size)
     gradient <- grad(function(a){ return (getSharpe_train(a, training_day_num, random_indices))}, a)
     
-    momentum <- momentum_factor * momentum + (inf_step_size + (initial_step_size - inf_step_size) * exp(-i / 200)) * gradient
+    momentum <- momentum_factor * momentum + (inf_step_size + (initial_step_size - inf_step_size) * exp(-i / 10)) * gradient
     a <- a + momentum
     if (i %% 5 == 0){
       cat('iteration ', i, '\n')
@@ -89,19 +89,24 @@ stochastic_gradient_descent <- function(training_day_num, batch_size){
 }
 
 bee_Algorithm <- function(training_day_num){
-  initial_population <- 500
-  best_patch <- 1
+  initial_population <- 2000
+  best_patch <- 3
   elite_patch <- 10
-  nep <- 50
-  nsp <- 20
-  ngh <- 0.1
+  nep <- 100
+  nsp <- 40
+  ngh <- 0.2
   
   max_iteration <- 2000
   error <- 0.00001
   bees <- matrix(0, nrow = initial_population, ncol = 13)
   bees[,2:13] <- matrix(runif(initial_population * 12, min = -1, max = 1), nrow = initial_population, ncol = 12)
   best_sharpe <- -100
+  best_sharpe2 <- -100
+  min_bound <- -1
+  max_bound <- 1
   for (i in 1:max_iteration){
+    min_bound <- min(c(min(bees[,2:13]), min_bound))
+    max_bound <- max(c(max(bees[,2:13]), max_bound))
     if (i %% 2 == 0){
       cat('iteration ', i, '\n')
       cat(bees[1,2:13], '\n')
@@ -111,10 +116,11 @@ bee_Algorithm <- function(training_day_num){
       bees[b,1] <- getSharpe_BA(bees[b,2:13], training_day_num)
     }
     bees <- bees[order(bees[,1], decreasing = TRUE),]
-    if (bees[1,1] - best_sharpe < error){
+    if (bees[1,1] - best_sharpe < error && best_sharpe - best_sharpe2 < error){
       return (bees[1,2:13])
     }
     else{
+      best_sharpe2 <- best_sharpe
       best_sharpe <- bees[1,1]
       new_bees <- matrix(0, nrow = initial_population, ncol = 13)
       best_bees <- bees[1:best_patch,2:13]
@@ -137,7 +143,7 @@ bee_Algorithm <- function(training_day_num){
         new_bees[(start_index + ((b-1)*nsp + 1)):(start_index + (b)*nsp),2:13] <- new_patch
       }
       start_index <- best_patch * nep + elite_patch * nsp
-      new_bees[(start_index + 1):initial_population,2:13] <- matrix(runif((initial_population - start_index) * 12, min = -1, max = 1), 
+      new_bees[(start_index + 1):initial_population,2:13] <- matrix(runif((initial_population - start_index) * 12, min = min_bound, max = max_bound), 
                                                                 nrow = initial_population - start_index, ncol = 12)
       bees <- new_bees
     }
