@@ -1,4 +1,4 @@
-source('yu_lib.r')
+source('yu_lib2.r')
 
 data <- read.table("../in_sample_data.txt", sep=",")
 so_indices <- 1 + 6 * 0:99 + 1
@@ -49,9 +49,41 @@ for (t in 1: (num_days - 1)){
     }
   }
 }
-b <- c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+test <- matrix(avrRCC[1:(num_days - 2)], nrow = num_days - 2,ncol = 100)
+Q1 <- (rcc[1:(num_days - 2),] - test) / N
+
+test <- matrix(avrROO[2:(num_days - 1)], nrow = num_days - 2,ncol = 100)
+Q2 <- (roo[2:(num_days - 1),] - test) / N
+
+test <- matrix(avrROC[2:(num_days - 1)], nrow = num_days - 2,ncol = 100)
+Q3 <- (roc[2:(num_days - 1),] - test) / N
+
+test <- matrix(avrRCO[2:(num_days - 1)], nrow = num_days - 2,ncol = 100)
+Q4 <- (rco[2:(num_days - 1),] - test) / N
+
+Q5 <- Q1 * tvl_mat[2:(num_days - 1),] / avrTVL[2:(num_days - 1),]
+Q6 <- Q2 * tvl_mat[2:(num_days - 1),] / avrTVL[2:(num_days - 1),]
+Q7 <- Q3 * tvl_mat[2:(num_days - 1),] / avrTVL[2:(num_days - 1),]
+Q8 <- Q4 * tvl_mat[2:(num_days - 1),] / avrTVL[2:(num_days - 1),]
+
+Q9 <- Q1 * rvp[2:(num_days - 1),] / avrRVP[2:(num_days - 1),]
+Q10 <- Q2 * rvp[2:(num_days - 1),] / avrRVP[2:(num_days - 1),]
+Q11 <- Q3 * rvp[2:(num_days - 1),] / avrRVP[2:(num_days - 1),]
+Q12 <- Q4 * rvp[2:(num_days - 1),] / avrRVP[2:(num_days - 1),]
+
+#b <- c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+system.time({b <- bee_Algorithm(1000)})
+b_n <- rep(0, 12)
+b_n[c(3:4, 7:8, 11:12)] <- b
+b <- b_n
+#b <- stochastic_gradient_descent(600, 300)
+
 W3 <- getW2(b)
 fill3 <- (W3 * ind_mat[3:num_days,]) >= 0
 RP3 <- rowSums(fill3 * W3 * roc[3:(num_days),]) / rowSums(abs(fill3 * W3))
 RP3[is.nan(RP3)] = 0
 output_mat <- output(data[,1], RP3, W3, 3)
+
+sharpe <- mean(RP3[600:1001])/sd(RP3[600:1001])
+sharpe_total <- mean(RP3)/sd(RP3)

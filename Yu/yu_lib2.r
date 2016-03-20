@@ -62,26 +62,31 @@ getW2Spe <- function(a, days = num_days){
            a7 * Q7 + a8 * Q8 + a11 * Q11 + a12 * Q12)
 }
 
-getSharpe_train <- function(a, training_day_num, random_indices){
+getSharpe_train <- function(b, training_day_num, random_indices){
   weight_penalty <- 0.0001
-  W2 <- getW2(a, training_day_num)
-  RP2 <- rowSums(W2[1:(training_day_num - 2),] * roc[3:(training_day_num),]) / rowSums(abs(W2[1:(training_day_num - 2),]))
-  return (mean(RP2[random_indices])/sd(RP2[random_indices]))
+  W3 <- getW2(b, training_day_num)
+  fill3 <- (W3 * ind_mat[3:num_days,]) >= 0
+  RP3 <- rowSums(fill3[3:(training_day_num),] * W3[1:(training_day_num - 2),] * roc[3:(training_day_num),]) / rowSums(abs(fill3[3:(training_day_num),] * W3[1:(training_day_num - 2),]))
+  RP3[is.nan(RP3)] = 0
+  #return (mean(RP3[random_indices])/sd(RP3[random_indices]) - weight_penalty * abs(sum(b) - 12))
+  return (mean(RP3[random_indices])/sd(RP3[random_indices]))
 }
 
-getSharpe_BA <- function(a, training_day_num){
-  W2 <- getW2Spe(a, training_day_num)
-  RP2 <- rowSums(W2[1:(training_day_num - 2),] * roc[3:(training_day_num),]) / rowSums(abs(W2[1:(training_day_num - 2),]))
-  return(mean(RP2)/sd(RP2))
+getSharpe_BA <- function(b, training_day_num){
+  W3 <- getW2Spe(b, training_day_num)
+  fill3 <- (W3 * ind_mat[3:num_days,]) >= 0
+  RP3 <- rowSums(fill3[3:(training_day_num),] * W3[1:(training_day_num - 2),] * roc[3:(training_day_num),]) / rowSums(abs(fill3[3:(training_day_num),] * W3[1:(training_day_num - 2),]))
+  RP3[is.nan(RP3)] = 0
+  return(mean(RP3)/sd(RP3))
 }
 
 stochastic_gradient_descent <- function(a, training_day_num, batch_size){
-  initial_step_size <- 0.01
-  inf_step_size = 0.01
+  initial_step_size <- 0.03
+  inf_step_size = 0.03
   max_iter <- 1000
   threshold <- 0.00001
   momentum = rep(0, 12)
-  momentum_factor = 0.5
+  momentum_factor = 0.7
   for (i in 1:max_iter){
     old_a <- a
     random_indices <- sample(1:(training_day_num - 2), batch_size)
@@ -119,7 +124,7 @@ bee_Algorithm <- function(training_day_num){
   best_sharpe2 <- -100
   min_bound <- -1
   max_bound <- 1
-
+  
   for (i in 1:max_iteration){
     min_bound <- min(c(min(bees[,2:(num_a + 1)]), min_bound))
     max_bound <- max(c(max(bees[,2:(num_a + 1)]), max_bound))
@@ -160,7 +165,7 @@ bee_Algorithm <- function(training_day_num){
       }
       start_index <- best_patch * nep + elite_patch * nsp
       new_bees[(start_index + 1):initial_population,2:(num_a + 1)] <- matrix(runif((initial_population - start_index) * (num_a), min = min_bound, max = max_bound), 
-                                                                nrow = initial_population - start_index, ncol = (num_a))
+                                                                             nrow = initial_population - start_index, ncol = (num_a))
       bees <- new_bees
     }
   }
