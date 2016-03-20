@@ -432,6 +432,7 @@ def save_file_data(data):
 def load_file_data():
     return pickle.load(open(SAVED_PARSED_DATA, 'rb'))  
 
+#save_file_data(parse_file(SAMPLE_DATA_FILE_NAME))
 LOADED_FILE = load_file_data()
 LOADED_EQ = read_saved_eq_comp_matrix_vals(SAVED_EQ_FILE_NAME)
 SAVED_ROC = generate_roc_matrix(LOADED_FILE)
@@ -447,6 +448,7 @@ def get_sharpe_opt(constants, parsed_data):
     return sharpe_ratio(rps)
 def gs(constants):
     return get_sharpe_opt(constants, LOADED_FILE)
+
 
 
 def random_algo():
@@ -515,8 +517,29 @@ def hill_climbing(starting_constants):
             amount_to_vary = random.randint(-100000000000,100000000000)/100000000000
             amount_to_vary += random.randint(-2,2)
 
-hill_climbing([1,0,1,0,1,0,1,0,1,0,1,0])   
+#hill_climbing([1,0,1,0,1,0,1,0,1,0,1,0])   
 #hill_climbing([-0.08911538287000001, -0.53621066426, 0.8760662, -1.94655274693, 0.166849, -0.34789106041999995, 0.2115474, 0.16615337498000002, -0.2179634, -0.03938351, 0.1606311, 0.302414])
 #hill_climbing([-0.08911538287000001, -0.53621066426, 0.8760662, -1.87618043702, 0.166849, -0.34789106041999995, 0.2115474, 0.177571, -0.2179634, -0.03938351, 0.1606311, 0.302414])
+
+def gs_range(constants, from_day, to_day):
+    rps = generate_rps_opt(constants, LOADED_FILE)
+    actual_rps = rps[from_day:to_day]
+    avg_returns = statistics.mean(actual_rps)
+    stdev_returns = statistics.stdev(actual_rps)
+    return avg_returns/stdev_returns
+
+
+
+
+
+##results = pickle.load(open('good_results.blob', 'rb'))
+##for res in results:
+##    
+##    print(gs_range(res, 603, 1003), ' ', res)
+
+##for res in results:
+##    print(res)
+
+
 
 
