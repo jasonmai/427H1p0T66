@@ -2,6 +2,7 @@ import csv
 import sys
 import math
 import statistics
+import collections
 import time
 import random
 import pickle
@@ -477,31 +478,45 @@ def random_algo2():
 def hill_climbing(starting_constants):
     constants = starting_constants[:]
     current_best_sharpe = gs(starting_constants)
+    sharpe = current_best_sharpe
     current_a_to_vary = random.randint(0,11)
     amount_to_vary = random.randint(-100000000000,100000000000)/100000000000
     amount_to_vary += random.randint(-2,2)
+    delta = collections.deque(maxlen=10)
+    delta.append(1)
     while (True):
-        
         temp_constants = constants[:]
         temp_constants[current_a_to_vary] += amount_to_vary
+
+        prev_sharpe = sharpe
         sharpe = gs(temp_constants)
+            
         if (sharpe > current_best_sharpe):
             print(sharpe, ' : ', temp_constants)
+            
             current_best_sharpe = sharpe
             constants = temp_constants
             if (amount_to_vary > 0):
-                amount_to_vary += random.randint(1,100000000000)/100000000000
+                amount_to_vary = random.randint(1,100000000000)/100000000000
             else:
-                amount_to_vary -= random.randint(1,100000000000)/100000000000
+                amount_to_vary = random.randint(-100000000000,0)/100000000000
             with open("results.txt", "a") as file:
                 file.write(str(sharpe) + ' : ' + str(temp_constants) + '\n')
+            delta.append(sharpe - prev_sharpe)
+            if (sum(delta) < 0.000001):
+                delta = collections.deque(maxlen=10)
+                delta.append(1)
+                current_a_to_vary = random.randint(0,11)
+                amount_to_vary = random.randint(-100000000000,100000000000)/100000000000
+                amount_to_vary += random.randint(-2,2)
         else:
             print('.', end='')
             current_a_to_vary = random.randint(0,11)
             amount_to_vary = random.randint(-100000000000,100000000000)/100000000000
             amount_to_vary += random.randint(-2,2)
-        
-hill_climbing([-0.08911538287000001, -0.53621066426, 0.8760662, -1.94655274693, 0.166849, -0.34789106041999995, 0.2115474, 0.16615337498000002, -0.2179634, -0.03938351, 0.1606311, 0.302414])
+
+hill_climbing([1,0,1,0,1,0,1,0,1,0,1,0])   
+#hill_climbing([-0.08911538287000001, -0.53621066426, 0.8760662, -1.94655274693, 0.166849, -0.34789106041999995, 0.2115474, 0.16615337498000002, -0.2179634, -0.03938351, 0.1606311, 0.302414])
 #hill_climbing([-0.08911538287000001, -0.53621066426, 0.8760662, -1.87618043702, 0.166849, -0.34789106041999995, 0.2115474, 0.177571, -0.2179634, -0.03938351, 0.1606311, 0.302414])
 
 
