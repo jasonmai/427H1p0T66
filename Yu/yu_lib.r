@@ -69,14 +69,15 @@ getW2 <- function(a, days = num_days){
 }
 
 getSharpe_train <- function(a, training_day_num, random_indices){
-  weight_penalty <- 0.001
+  weight_penalty <- 0.0001
   W2 <- getW2(a, training_day_num)
   RP2 <- rowSums(W2[1:(training_day_num - 2),] * roc[3:(training_day_num),]) / rowSums(abs(W2[1:(training_day_num - 2),]))
   return (mean(RP2[random_indices])/sd(RP2[random_indices]) - weight_penalty * abs(sum(a) - 12))
 }
 
 stochastic_gradient_descent <- function(training_day_num, batch_size){
-  a <- c(0.5891798, 1.019876, -0.2498859, -6.685727, 0.6505215, -0.6545521, 0.07183188, 1.107381, -0.7832779, 0.410139, -0.1511953, -0.2990031)
+  a <- rep(0, 12)
+  a[5] <- 1
   initial_step_size <- 5
   inf_step_size = 0.1
   max_iter <- 100000
