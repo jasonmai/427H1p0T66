@@ -2,10 +2,13 @@ import csv
 import sys
 import math
 import statistics
+import time
 import random
 import pickle
 
 NUM_STOCKS = 100
+SAMPLE_DATA_FILE_NAME = 'p1data'
+SAVED_PARSED_DATA = 'saved_parsed.blob'
 SAVED_EQ_FILE_NAME = 'saved_eq_vals'
 CONSTS = [1,1,1,1,1,1,1,1,1,1,1,1]
 #CONSTS = [1,0,0,0,0,0,0,0,0,0,0,0]
@@ -233,7 +236,7 @@ def generate_weight_matrix(eq_comp_matrix, constants, parsed_data):
         stock_weights = []
         for stock_num in range(NUM_STOCKS):
             stock_weights.append(weight(day, stock_num, eq_comp_matrix,
-								 constants))
+					constants))
         weight_matrix.append(stock_weights)
     return weight_matrix
 
@@ -334,14 +337,14 @@ def output(file_name, parsed_data, constants, saved_data_exists):
     if (saved_data_exists):
         eq_comp_matrix = read_saved_eq_comp_matrix_vals(SAVED_EQ_FILE_NAME)
         weight_matrix = generate_weight_matrix(eq_comp_matrix, constants,
-											   parsed_data)
+                                               parsed_data)
         roc_matrix = generate_roc_matrix(parsed_data)
     else: 
         r_data = memoize_r_data(parsed_data)
         eq_comp_matrix = memoize_component_vals(parsed_data, r_data)
         write_comp_vals(SAVED_EQ_FILE_NAME, eq_comp_matrix)
         weight_matrix = generate_weight_matrix(eq_comp_matrix, constants,
-											   parsed_data)
+                                               parsed_data)
         roc_matrix = r_data[3]
 
     with open(file_name, 'w', newline='') as fp:
@@ -377,38 +380,83 @@ def output(file_name, parsed_data, constants, saved_data_exists):
 
 
 def generate_rps(constants, parsed_data):
+    #t0 = time.perf_counter()
     eq_comp_matrix = read_saved_eq_comp_matrix_vals(SAVED_EQ_FILE_NAME)
+    #print('time: ', time.perf_counter() - t0)
+
+    #t0 = time.perf_counter()
     weight_matrix = generate_weight_matrix(eq_comp_matrix, constants,
-										   parsed_data)
+					   parsed_data)
+    #print('time: ', time.perf_counter() - t0)
+
+    #t0 = time.perf_counter()
     roc_matrix = generate_roc_matrix(parsed_data)
+    #print('time: ', time.perf_counter() - t0)
+
+    #t0 = time.perf_counter()
     rps = []
     for day in range(len(parsed_data)):
         rps.append(rp2(day, weight_matrix, roc_matrix))
+    #print('time: ', time.perf_counter() - t0)
+    
     return rps
 
-#output('jm_p2_results.csv', parse_file('p1data'), CONSTS, True)
-#output('jm_p2_results.csv', parse_file('p1data'), CONSTS, False)
+def get_sharpe(constants, parsed_data):
+    t0 = time.perf_counter()
+    rps = generate_rps(constants, parsed_data)
+    sharpe = sharpe_ratio(rps)
+    print('time: ', time.perf_counter() - t0)
+    print(sharpe)
 
-##rps = generate_rps(CONSTS, parse_file('p1data'))
+#output('jm_p2_results.csv', parse_file(SAMPLE_DATA_FILE_NAME), CONSTS, True)
+#output('jm_p2_results.csv', parse_file(SAMPLE_DATA_FILE_NAME), CONSTS, False)
+
+##rps = generate_rps(CONSTS, parse_file(SAMPLE_DATA_FILE_NAME))
 ##sharpe = sharpe_ratio(rps)
 
-def get_sharpe(a,b,c,d,e,f,g,h,i,j,k,l):
-    rps = generate_rps([a,b,c,d,e,f,g,h,i,j,k,l], parse_file('p1data'))
-    sharpe = sharpe_ratio(rps)
-    print(sharpe)
-    
+
+
+
+
+
+
+
+
+
+
+def save_file_data(data):
+    file = open(SAVED_PARSED_DATA, 'wb')
+    return pickle.dump(data, file)
+
+def load_file_data():
+    return pickle.load(open(SAVED_PARSED_DATA, 'rb'))  
+
+LOADED_FILE = load_file_data()
+LOADED_EQ = read_saved_eq_comp_matrix_vals(SAVED_EQ_FILE_NAME)
+SAVED_ROC = generate_roc_matrix(LOADED_FILE)
+def generate_rps_opt(constants, parsed_data):
+    weight_matrix = generate_weight_matrix(LOADED_EQ, constants,
+					   parsed_data)
+    rps = []
+    for day in range(len(parsed_data)):
+        rps.append(rp2(day, weight_matrix, SAVED_ROC))
+    return rps
+def get_sharpe_opt(constants, parsed_data):
+    rps = generate_rps_opt(constants, parsed_data)
+    return sharpe_ratio(rps)
+def gs(constants):
+    return get_sharpe_opt(constants, LOADED_FILE)
 
 
 for i in range(10000):
     constants = []
     for i in range(12):
-        rand = random.randint(-10000,10000)
+        rand = random.randint(-2,2)
         rand += random.randint(-100000000000,100000000000)/100000000000
         constants.append(rand)
-    rps = generate_rps(constants, parse_file('p1data'))
-    sharpe = sharpe_ratio(rps)
-    print(constants, ' : ', sharpe_ratio(rps))
+    sharpe = gs(constants)
+    print(constants, ' : ', sharpe)
     if (sharpe > 0.4):
-        break;
+       break;
 
 
