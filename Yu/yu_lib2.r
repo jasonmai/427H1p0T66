@@ -75,7 +75,7 @@ getSharpe_train <- function(b, training_day_num, random_indices){
 getSharpe_BA <- function(b, training_day_num){
   W3 <- getW2Spe(b, training_day_num)
   fill3 <- (W3 * ind_mat[3:num_days,]) >= 0
-  RP3 <- rowSums(fill3[3:(training_day_num),] * W3[1:(training_day_num - 2),] * roc[3:(training_day_num),]) / rowSums(abs(fill3[3:(training_day_num),] * W3[1:(training_day_num - 2),]))
+  RP3 <- rowSums(fill3[1:(training_day_num - 2),] * W3[1:(training_day_num - 2),] * roc[3:(training_day_num),]) / rowSums(abs(fill3[1:(training_day_num - 2),] * W3[1:(training_day_num - 2),]))
   RP3[is.nan(RP3)] = 0
   return(mean(RP3)/sd(RP3))
 }
@@ -116,7 +116,7 @@ bee_Algorithm <- function(training_day_num){
   ngh <- 0.1
   num_a <- 6
   max_iteration <- 1000
-  min_iteration <- 50
+  min_iteration <- 30
   error <- 0.00001
   bees <- matrix(0, nrow = initial_population, ncol = num_a + 1)
   bees[,2:(num_a + 1)] <- matrix(runif(initial_population * num_a, min = -1, max = 1), nrow = initial_population, ncol = num_a)
