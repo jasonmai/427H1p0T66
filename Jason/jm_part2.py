@@ -5,9 +5,12 @@ import pickle
 
 NUM_STOCKS = 100
 SAVED_EQ_FILE_NAME = 'saved_eq_vals'
-CONSTS = [1,1,1,1,1,1,1,1,1,1,1,1]
+#CONSTS = [1,1,1,1,1,1,1,1,1,1,1,1]
 #CONSTS = [1,0,0,0,0,0,0,0,0,0,0,0]
+#CONSTS = [0,1,0,0,0,0,0,0,0,0,0,0]
 #CONSTS = [0,0,0,0,1,0,0,0,0,0,0,0]
+CONSTS = [0,0,1,0,0,0,0,0,0,0,0,0]
+#CONSTS = [0,0,0,0,0,0,1,0,0,0,0,0]
 
 #data[day][date/stock][stock_num][stock_val]
 def parse_file(file_name):
@@ -41,27 +44,6 @@ def rcc(day, stock_num, parsed_data):
     sc_t_minus1_j = parsed_data[day - 1]['stocks'][stock_num]['sc']
     return (sc_tj/sc_t_minus1_j) - 1
 
-def cumR(day, rp_values):
-    if (day < 2):
-        return 99
-    cum = 0
-    for day in range(2, day + 1):
-        cum += math.log(1 + rp_values[day])
-    return cum
-
-def time_series_1(day, weight_matrix):
-    if (day < 2):
-        return 99
-    cum = 0
-    for weight in weight_matrix[day]:
-        cum += abs(weight)
-    return cum/NUM_STOCKS
-
-def time_series_2(day, ts_1, weight_matrix):
-    if (day < 2):
-        return 99
-    return sum(weight_matrix[day])/ts_1
-
 def rco(day, stock_num, parsed_data):
     if (day < 1):
         return 99
@@ -87,6 +69,27 @@ def rvp(day, stock_num, parsed_data):
     ln_sh = math.log(parsed_data[day]['stocks'][stock_num]['sh'])
     ln_sl = math.log(parsed_data[day]['stocks'][stock_num]['sl'])
     return init_val * ((ln_sh - ln_sl) ** 2)
+
+def cumR(day, rp_values):
+    if (day < 2):
+        return 99
+    cum = 0
+    for day in range(2, day + 1):
+        cum += math.log(1 + rp_values[day])
+    return cum
+
+def time_series_1(day, weight_matrix):
+    if (day < 2):
+        return 99
+    cum = 0
+    for weight in weight_matrix[day]:
+        cum += abs(weight)
+    return cum/NUM_STOCKS
+
+def time_series_2(day, ts_1, weight_matrix):
+    if (day < 2):
+        return 99
+    return sum(weight_matrix[day])/(ts_1 * NUM_STOCKS)
 
 def a1(day, stock_num, rcc_matrix):
     rcc_t_minu1_j = rcc_matrix[day - 1][stock_num]
@@ -236,6 +239,7 @@ def memoize_r_data(parsed_data):
     roo_matrix = []
     rco_matrix = []
     roc_matrix = []
+    roc_matrix = generate_roc_matrix(parsed_data)
     for day in range(len(parsed_data)):
         stock_rccs = []
         stock_roos = []
@@ -309,7 +313,10 @@ def read_saved_eq_comp_matrix_vals(file_name):
 
 def print_formatter(item):
     print_item = round(item, 7) + 0
-    return format(print_item, '.7f')
+    if (print_item == 0):
+        return 0
+    return print_item
+    #return format(print_item, '.7f')
 
 def output(file_name, parsed_data, saved_data_exists):
 
@@ -351,9 +358,8 @@ def output(file_name, parsed_data, saved_data_exists):
             for stock in range(NUM_STOCKS):
                 row.append(print_formatter(weight_matrix[day][stock]))
             data.append(row)
-
         file.writerows(data)
 
 
-
-output('jm_p2_results.csv', parse_file('p1data'), True)
+#output('jm_p2_results.csv', parse_file('p1data'), True)
+output('jm_p2_results.csv', parse_file('p1data'), False)
