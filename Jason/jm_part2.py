@@ -1,6 +1,8 @@
 import csv
 import sys
 import math
+import statistics
+import random
 import pickle
 
 NUM_STOCKS = 100
@@ -311,12 +313,20 @@ def write_comp_vals(file_name, data):
 def read_saved_eq_comp_matrix_vals(file_name):
     return pickle.load(open(file_name, 'rb'))
 
+
+def sharp_ratio(rps):
+    actual_rps = rps[2:]
+    avg_returns = statistics.mean(actual_rps)
+    stdev_returns = statistics.stdev(actual_rps)
+    return avg_returns/stdev_returns
+
 def print_formatter(item):
     print_item = round(item, 7) + 0
     if (print_item == 0):
         return 0
     return print_item
     #return format(print_item, '.7f')
+
 
 def output(file_name, parsed_data, saved_data_exists):
 
@@ -358,8 +368,33 @@ def output(file_name, parsed_data, saved_data_exists):
             for stock in range(NUM_STOCKS):
                 row.append(print_formatter(weight_matrix[day][stock]))
             data.append(row)
+        
         file.writerows(data)
 
 
-output('jm_p2_results.csv', parse_file('p1data'), True)
+
+def generate_rps(parsed_data):
+    eq_comp_matrix = read_saved_eq_comp_matrix_vals(SAVED_EQ_FILE_NAME)
+    weight_matrix = generate_weight_matrix(eq_comp_matrix, parsed_data)
+    roc_matrix = generate_roc_matrix(parsed_data)
+    rps = []
+    for day in range(len(parsed_data)):
+        rps.append(rp2(day, weight_matrix, roc_matrix))
+    return rps
+
+#output('jm_p2_results.csv', parse_file('p1data'), True)
 #output('jm_p2_results.csv', parse_file('p1data'), False)
+
+
+for i in range(1000):
+    CONSTS = []
+    for i in range(12):
+        CONSTS.append(random.randint(-10000,10000)/10000)
+    rps = generate_rps(parse_file('p1data'))
+    sharp = sharp_ratio(rps)
+    if (sharp > 0.4):
+        print(CONSTS, ' : ', sharp_ratio(rps))
+    else:
+        print('.')
+
+
