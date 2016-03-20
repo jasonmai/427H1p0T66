@@ -1,19 +1,9 @@
-AbsWeight <- function(t, weights) {
-    if (t < 3) {
-        return(99)
-    }
-    
-    result <- sum(abs(weights[t,]))
-    
-    result
+AbsWeightTotal <- function(weights) {
+    rowMeans(abs(weights))
 }
 
-AbsWeightWeighted <- function(t, weights) {
-    if (t < 3) {
-        return(99)
-    }
-    
-    sum(weights[t,]) / sum(abs(weights[t,]))
+AbsWeightWeightedTotal <- function(t, weights) function(weights) {
+    rowSums(weights)/rowSums(abs(weights))
 }
 
 PrintOutput <- function(allRP, weights) {
@@ -52,12 +42,6 @@ GetCumR <- function(allRP) {
 }
 
 sharpeRatio <- function(allRP2) {
-    #     allRP2 <- c()
-    #     
-    #     for (t in 1:nrow(part1Data)) {
-    #         allRP2 <- c(allRP2, RP2(t))
-    #     }
-    
     avgAllRP2 <- mean(allRP2)
     
     avgAllRP2 / sd(allRP2)
@@ -93,6 +77,14 @@ sharpeSATest <- function(a) {
     print(avgAllRP2)
     
     -(avgAllRP2 / sd(allRP2))
+}
+
+ALLRPGeneral <- function(weights) {
+    #taking ROC from the third day since our weights are only available from then on
+    top <- as.matrix(weights * ROCResult[3:nrow(ROCResult),])
+    bottom <- as.matrix(abs(weights))
+    
+    rowSums(top) / rowSums(bottom)
 }
 
 sharpeTrainGeneral <- function(a, funWeight, funAllRP) {
